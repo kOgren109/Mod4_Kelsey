@@ -1,0 +1,244 @@
+---
+title: "Workshop3"
+author: "Kelsey Ogren"
+date: "2024-09-09"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Data Wrangling in R
+
+##3.1 Tidying data using Tidyr
+
+```{r tidyverse TB data}
+library(tidyverse)
+table1
+table2
+table3
+table1 %>%
+  mutate(rate= cases / population*10000) #computes rate per 10,000
+table1 %>% 
+  count(year, wt= cases) #computes cases per year
+```
+
+###ggplot of the tidy data
+
+```{r ggplot of TB data}
+library(ggplot2)
+ggplot(table1, aes(year, cases)) +
+  geom_line(aes(group = country), color= "grey50") +
+  geom_point(aes(color= country, shape= country))
+```
+
+
+##3.1.1 Exercises
+1. For each of the sample tables, describe what each observation and each column represents.
+2. Sketch out the processes you would use to calculate the rate for table2 and table3. You will need to perform four operations:
+a.    Extract the number of TB cases per country per year
+b.    Extract the matching population per country per year
+c.    Divide cases by population, and multiply by 10,000
+d.    Store back in the appropriate place
+
+
+
+##4.5 Pivoting data to make it tidy CHANGE THIS
+
+```{r pivot_longer() to tidy data}
+billboard
+billboard |>
+  pivot_longer(
+    cols= starts_with("wk"), #specifys colums to pivot(the ones that aren't variables)
+    names_to = "week", #names the variables stored in the column names
+    values_to = "rank", #names the variable stored in the cell values 
+    values_drop_na = TRUE #removes rows with NA values (ranks)
+  )
+```
+
+As you can see in the above code snippet, there are three key arguments to the pivot_longer() function:
+1. cols which specifies the columns you want to pivot (the ones that aren’t variables). Note: you could either use !c(artist, track, date.entered) OR starts_with('wk') because the cols argument uses the same syntax as select().
+2. names_to which names the variable stored in the column names. We chose to name that variable week.
+3. values_to which names the variable stored in the cell values that we named rank
+
+Note that in the code "week" and "rank" are quoted because they are new variables that we are creating, they don’t exist yet in the data when we run the pivot_longer() call.
+
+
+##Further information on Pivot Longer (Pivoting longer)
+
+```{r tribbles allow us to construct small tibbles by hand}
+df <- tribble(
+  ~id, ~bp1, ~bp2,
+  "A", 100, 120,
+  "B", 140, 115,
+  "C", 120, 125
+)
+#need to pivot df longer in order to get measurement(column names) and value(cell values)
+df |>
+  pivot_longer(
+    cols= bp1:bp2,
+    names_to = "measurement",
+    values_to = "value"
+  )
+```
+
+
+##Widening datasets
+Widening is essentially the opposite of lengthening and we use the function ```pivot_wider(),``` which allows handling of an observation if it is scattered across multiple rows. 
+
+```{r widening a dataset}
+cms_patient_experience
+cms_patient_experience |> 
+  distinct(measure_cd, measure_title) #distinct function shows complete set of values for measure_cd and measure_title
+```
+```pivot_wider()``` has the opposite interface to ```pivot_longer()```: instead of choosing new column names, we need to provide the existing columns that define the values ```(values_from)``` and the column name ```(names_from)```:
+
+```{r pivot_wider}
+cms_patient_experience |>
+  pivot_wider(
+    names_from= measure_cd,
+    values_from = prf_rate
+  )
+```
+
+The above output doesn’t look quite right; we still seem to have multiple rows for each organization. That’s because, we also need to tell pivot_wider() which column or columns have values that uniquely identify each row; in this case those are the variables starting with "org":
+
+```{r defining columns based on variable in column starting with a word (use id_cols = starts_with())}
+cms_patient_experience |>
+  pivot_wider(
+    id_cols = starts_with("org"), #pivots wider all columns starting with 'org'
+    names_from = measure_cd,
+    values_from = prf_rate
+  )
+
+```
+
+This code produces the wider graph that we are trying to get. 
+
+
+## 4.5.4 Pivoting wider
+
+```{r understanding pivot_wider with simple dataframe}
+#creating a tribble
+df <- tribble(
+  ~id, ~measurement, ~value,
+  "A", "bp1", 100,
+  "B", "bp1", 140,
+  "B", "bp2", 115,
+  "A", "bp2", 120,
+  "A", "bp3", 105
+)
+
+#take names from measurement column using 'names_from()' and values from values colume with 'values_from()'
+df |>
+  pivot_wider(
+    names_from = measurement,
+    values_from = value
+  )
+```
+
+
+###4.5.5 Exercises NEED TO DO
+Why are pivot_longer() and pivot_wider() not perfectly symmetrical?
+
+```{r pivot_longer and pivot_wider not perfectly symmetrical}
+
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return)
+
+
+stocks %>% 
+  pivot_wider(names_from = year, values_from = return) %>% 
+  pivot_longer(`2015`:`2016`, names_to = "year", values_to = "return")
+
+```
+
+
+2. Why does this code fail?
+
+```{r why does this code fail}
+library(tidyverse)
+t4a <- table4a
+
+colnames(table4a)
+
+table4a %>% 
+  pivot_longer(cols=c(1999, 2000), names_to = "year", values_to = "cases")
+#> Error in `pivot_longer()`:
+#> ! Can't subset columns past the end.
+#> ℹ Locations 1999 and 2000 don't exist.
+#> ℹ There are only 3 columns.
+
+#The above code fails because it is thinking 1999 and 2000 are numbers. must put them in "" to show they are names of columns
+
+table4a %>% 
+  pivot_longer(cols=c("1999", "2000"), names_to = "year", values_to = "cases")
+#the above code pivots the table longer as intended
+```
+
+3. Consider the sample tibbble below. Do you need to make it wider or longer? What are the variables?
+
+```{r should this tibble be made longer or wider?}
+
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+
+preg %>% 
+  pivot_longer(
+    cols= c(male, female),
+    names_to = "Sex",
+    values_to  = "Count"
+  )
+```
+
+The variables are as follows:
+* Male and female columns can be made into "Sex" 
+* The values can be made into a column "Count"
+
+The original tribble is already in a wide mode, so we will use pivot_longer to make the dataset longer. This allows each row to represent a single observation for the sex and the pregnancy status. 
+
+##4.5.6 Separating and uniting data tables
+
+When one column has two variables within it (i.e. rate = cases/population), we can use ```separate()``` function to separate the one column into multiple columns.
+
+```{r separating data in one column to multiple columns}
+table3
+table3 %>%
+  separate(rate, into = c("cases", "population"))
+#separate() will default to split values whereever there is a non-alphanumeric character (the / in this example)
+
+#can also use sep = "" to direct where to split the data
+table3 %>%
+  separate(rate, into= c("cases", "population"), sep= "/")
+
+#separate default converts new columns to character types
+#can change this by using 'convert= TRUE' to convert them to better types
+table3 %>%
+  separate(rate, into= c("cases", "population"), convert = TRUE)
+
+#can pass a vector of integers to 'sep =' to split at a position in the number
+table3 %>% 
+  separate(year, into= c("century", "year"), sep= 2)
+```
+
+```{r using unite(), the inverse of separate()}
+#combine multiple colums into single colume with 'unite()'
+table5
+table5 %>%
+  unite(year, century, year, sep="") #1st year = new column name, century and 2nd year = old column names, sep="" instructs a character to be put inbetween the two numbers see below example, default is to add an underscore_
+#sep= "" says no separator in between
+
+table5 %>%
+  unite(year, century, year, sep= "tree")
+```
+
