@@ -9,37 +9,21 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-##Importing the Shark Control Program Data .csv file
-```{r importing data .csv file}
-df <- read_csv("export.csv")
-```
-
 
 ##Data Wrangling and Cleaning
-```{r my data wrangling and cleaning}
-library(dplyr)
-library(tidyverse)
-df2 <- df |>
-  select(c(...1, CalendarYear, ...3, ...5:...50)) |>
-  rename("...2" = CalendarYear) 
 
-df3 <- df2 |>
-  row_to_names(row_number = 1)
-
-```
-
-```{r ben's data wrangling}
+```{r data_wrangling}
 shark_program <-
   read_csv("export.csv") |>
   row_to_names(row_number = 2, remove_rows_above = FALSE) |> #variable names are meaningless, so change by instructing 'row_to_names' function to put row number 2 as the name
-  clean_names() #but we want
+  clean_names() 
 head(shark_program)
 
 ```
 
 
 
-```{r separating species group out}
+```{r separating_species}
 library(tidyverse)
 library(dplyr)
 #install.packages("janitor")
@@ -72,4 +56,69 @@ other_catch <-
   row_to_names(row_number= 1) |>
   rename(Area = 1) |>
   mutate(across(-c(Area), as.numeric))
+```
+
+## Pivoting Wide Tibbles into Long Format
+```{r pivot_long}
+long_shark_catch <- shark_catch |> 
+  pivot_longer(!Area, names_to= "Year", values_to = "Nos")
+
+long_mammal_catch <- mammal_catch |>
+  pivot_longer(!Area, names_to= "Year", values_to = "Nos")
+
+long_turtle_catch <- turtle_catch |>
+  pivot_longer(!Area, names_to= "Year", values_to= "Nos")
+```
+
+## Making Stats
+```{r stats}
+shark_stats <-
+  long_shark_catch |> #uses the long tibble
+  filter(Area != "Grand Total") |> #filters out areas not including grandtotal
+  group_by(Year) |> #groups area and numbers by year
+  summarise(Mean =mean(Nos, na.rm= TRUE),
+            SD = sd(Nos, na.rm= TRUE)) |> #calculates the statistics based on the year groupings
+  mutate(Year = as.numeric(Year)) |> #makes the Year a numeric value
+  mutate(Taxa= "Sharks") #creates new column with taxa as sharks
+
+turtle_stats <-
+  long_turtle_catch |>
+  group_by(Year) |>
+  summarise(Mean = mean(Nos, na.rm= TRUE), 
+            SD = sd(Nos, na.rm = TRUE)) |>
+  mutate(Year = as.numeric(Year)) |>
+  mutate(Taxa= "Turtles")
+
+mammal_stats <-
+  long_mammal_catch |>
+  group_by(Year) |>
+  summarise(Mean = mean(Nos, na.rm= TRUE),
+            SD= sd(Nos, na.rm= TRUE)) |>
+  mutate(Year= as.numeric(Year)) |>
+  mutate(Taxa= "Mammals")
+
+combine_stats <-
+  bind_rows(shark_stats, turtle_stats, mammal_stats)
+```
+
+
+```{r graphing}
+library(ggplot2)
+
+ggplot(data= long_shark_catch, aes(x= Year, y= Nos)) +
+  geom_col(fill= "cyan3") +
+  geom_col(data= long_turtle_catch, aes(x= Year, y= Nos, fill= "coral3"))
+
+
+
+ggplot(data= combine_stats, aes(x= Year, y= Mean, fill= Taxa, shape= Taxa), color= "black") +
+  geom_line() +
+  geom_pointrange(aes(ymin= Mean - SD, ymax= Mean + SD)) +
+  scale_shape_manual(values= c(23, 24, 25))
+
+ggplot(data= combine_stats, aes(x = Year, y= Mean, color= Taxa, shape= Taxa)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth() +
+  theme_bw()
 ```
