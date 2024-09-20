@@ -1,0 +1,29 @@
+---
+title: "MB5370 Data Science in R"
+author: "Kelsey Ogren"
+date: "2024-09-20"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Plot Deconstruction
+
+The first task in this module is to find a graph that describes a topic of interest and could be improved upon. The column graph below describes the shark bite incidents in New South Wales, Australia through the years of 1870 to 2020. It also presents the counts of injuries and fatalities that resulted because of the shark incidents. This plot is used to illustrate the trends in shark bites in New South Wales before and after the Shark Meshing or Bather Protection Program was introduced in late 1937.
+
+
+![Original NSW Shark Incident Graph](images/Original_graph.png)
+
+
+This graph is difficult to interpret because the trends are illustrated through bars, rather than with lines, plus the stacked bars end up emphasizing the fatalities before 1970 because the red color (fatalities) draws more attention and covers much of the blue column (injuries). This is misleading in that it appears there were many more fatalities prior to the 1970's. After analyzing the raw data, I also found that this graph completely leaves out the number of shark encounters that resulted in uninjured people. In these ways, this graph seems to be highlighting certain data points to strengthen the argument that the implementation of the Shark Meshing Program in 1937 has decreased the number of shark bites and fatalities in New South Wales. 
+
+
+![Reconstructed NSW Shark Incident Plot](images/reconstructed_NSWsharks.png)
+
+
+This reconstructed graph shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. This graph shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
+
