@@ -19,11 +19,26 @@ The first task in this module is to find a graph that describes a topic of inter
 ![Original NSW Shark Incident Graph](images/Original_graph.png)
 
 
-This graph is difficult to interpret because the trends are illustrated through bars, rather than with lines, plus the stacked bars end up emphasizing the fatalities before 1970 because the red color (fatalities) draws more attention and covers much of the blue column (injuries). This is misleading in that it appears there were many more fatalities prior to the 1970's. After analyzing the raw data, I also found that this graph completely leaves out the number of shark encounters that resulted in uninjured people. In these ways, this graph seems to be highlighting certain data points to strengthen the argument that the implementation of the Shark Meshing Program in 1937 has decreased the number of shark bites and fatalities in New South Wales. 
+**Figure 1.** The original NSW shark incident graph is difficult to interpret because the trends are illustrated through bars, rather than with lines, plus the stacked bars end up emphasizing the fatalities before 1970 because the red color (fatalities) draws more attention and covers much of the blue column (injuries). This is misleading in that it appears there were many more fatalities prior to the 1970's. After analyzing the raw data, I also found that this graph completely leaves out the number of shark encounters that resulted in uninjured people. In these ways, this graph seems to be highlighting certain data points to strengthen the argument that the implementation of the Shark Meshing Program in 1937 has decreased the number of shark bites and fatalities in New South Wales. 
 
 
 ![Reconstructed NSW Shark Incident Plot](images/reconstructed_NSWsharks.png)
 
 
-This reconstructed graph shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. This graph shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
+Figure 2. The reconstructed NSW shark incident plot shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. This graph shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
 
+
+## End-to-end Data Analysis in R
+### Part 1. QFISH Shark Control Program Dataset
+
+The following report uses the Shark Control Program Dataset from the QFISH database. It analyzes the raw data to show a graph depicting the total number of sharks caught alongsidee the numbers of dead sharks caught in the control program. The second raw data graph shows the total number of sharks caught throughout the 13 areas where the control program is implemented in Queensland, Australia. A third graph was created to show the average number of sharks caught compared to the average number of mammal and turtle by-catch. 
+
+The data was downloaded as a Comma Separated Values (CSV) file directly from QFISH with a customized data selection to include year, species group and the fate of the animals caught. The CSV file was then imported into RStudio for analysis and to create the graphs.
+
+```{r importing_data, warning= FALSE, error= FALSE, echo= FALSE}
+df <- read_csv("export.csv")
+```
+
+### Part 2. Tidy the Data
+
+The imported dataset required substantial data wrangling to get it into a "tidy" dataframe that could be more easily graphed. First, the 
