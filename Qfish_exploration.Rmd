@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ##Data Wrangling and Cleaning
 
 ```{r data_wrangling}
+library(janitor)
+library(tidyverse)
 shark_program <-
   read_csv("export.csv") |>
   row_to_names(row_number = 2, remove_rows_above = FALSE) |> #variable names are meaningless, so change by instructing 'row_to_names' function to put row number 2 as the name
@@ -20,22 +22,20 @@ shark_program <-
 head(shark_program)
 
 shark_program_fatality <-
-  read_csv("export2.csv")
-
-shark_program_fatality_final <-
-  shark_program_fatality |>
+  read_csv("export2.csv") |>
   row_to_names(row_number = 3, remove_rows_above = FALSE) |> #variable names are meaningless, so change by instructing 'row_to_names' function to put row number 2 as the name
   clean_names() 
 head(shark_program_fatality)
+
 ```
 
 ```{r fatality_species}
 library(tidyverse)
 library(dplyr)
 library(janitor)
-year_data <- c()
+
 dead_data <-
-  shark_program_fatality_final |>
+  shark_program_fatality |>
   select(area | contains("dead")) |>
   row_to_names(row_number= 2, remove_rows_above = FALSE) |>
   clean_names() |>
@@ -43,7 +43,7 @@ dead_data <-
 
 
 live_data <-
-   shark_program_fatality_final |>
+   shark_program_fatality |>
   select(area | contains("alive")) |>
   row_to_names(row_number= 2, remove_rows_above = FALSE) |>
   clean_names() |>
@@ -96,6 +96,9 @@ dead_animals <- left_join(dead_animal, long_mammal_dead) |>
 dead_shark_by_year <- long_shark_dead |>
   filter(Area == "Grand Total") |>
   mutate(Year = as.numeric(Year))
+
+long_shark_catch <- shark_catch |> 
+  pivot_longer(!Area, names_to= "Year", values_to = "Nos")
 
 long_shark_catch_dead <- left_join(long_shark_catch, long_shark_dead) |>
   mutate(Year = as.numeric(Year))
@@ -232,5 +235,33 @@ long_shark_catch %>%
   filter(Area != "Grand Total") %>%
   ggplot(aes(x= Year, y= Nos, fill= Area))+
   geom_col() +
-  facet_wrap(~Area)
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=45)) +
+  scale_x_discrete(labels= c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24")) +
+  facet_wrap(~Area) +
+  labs(title = "Total Number of Sharks Caught by Area", y= "Number Caught") +
+  theme(axis.title= element_text(size= 26), 
+        (panel.grid.minor.x = element_blank())) +
+  theme(plot.title= element_text(size= 35,hjust= 0.5)) +
+  theme(panel.grid.minor.x = element_blank()) +
+  theme(axis.text.y= element_text(size=18)) +
+  theme(strip.text= element_text(size= 20)) +
+  theme(legend.position = "none")
+  
+```
+
+```{r GRAPH TO BE USED IN ASSIGNMENT IF IN R}
+########## shark catches by area plot ###########
+long_shark_catch %>% 
+  filter(Area != "Grand Total") %>%
+  ggplot(aes(x= Year, y= Nos, fill= Area))+
+  geom_col() +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle=45)) +
+  scale_x_discrete(labels= c("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24")) +
+  facet_wrap(~Area) +
+  labs(title = "Total Number of Sharks Caught by Area", y= "Number Caught") +
+  theme(axis.text.x= element_text(size=5)) +
+  theme(legend.position = "none")
+```
 ```

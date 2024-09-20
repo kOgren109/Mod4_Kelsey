@@ -1,31 +1,44 @@
 ---
 title: "MB5370 Data Science in R"
 author: "Kelsey Ogren"
-date: "2024-09-20"
 output:
   pdf_document: default
   html_document: default
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
 ## Plot Deconstruction
 
 The first task in this module is to find a graph that describes a topic of interest and could be improved upon. The column graph below describes the shark bite incidents in New South Wales, Australia through the years of 1870 to 2020. It also presents the counts of injuries and fatalities that resulted because of the shark incidents. This plot is used to illustrate the trends in shark bites in New South Wales before and after the Shark Meshing or Bather Protection Program was introduced in late 1937.
 
-
 ![Original NSW Shark Incident Graph](images/Original_graph.png)
-
 
 **Figure 1.** The original NSW shark incident graph is difficult to interpret because the trends are illustrated through bars, rather than with lines, plus the stacked bars end up emphasizing the fatalities before 1970 because the red color (fatalities) draws more attention and covers much of the blue column (injuries). This is misleading in that it appears there were many more fatalities prior to the 1970's. After analyzing the raw data, I also found that this graph completely leaves out the number of shark encounters that resulted in uninjured people. In these ways, this graph seems to be highlighting certain data points to strengthen the argument that the implementation of the Shark Meshing Program in 1937 has decreased the number of shark bites and fatalities in New South Wales. 
 
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
+&nbsp;  
 
 ![Reconstructed NSW Shark Incident Plot](images/reconstructed_NSWsharks.png)
 
 
-Figure 2. The reconstructed NSW shark incident plot shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. This graph shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
+**Figure 2.** The reconstructed NSW shark incident plot shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. This graph shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
+
 
 
 ## End-to-end Data Analysis in R
@@ -33,12 +46,165 @@ Figure 2. The reconstructed NSW shark incident plot shows the trends of shark en
 
 The following report uses the Shark Control Program Dataset from the QFISH database. It analyzes the raw data to show a graph depicting the total number of sharks caught alongsidee the numbers of dead sharks caught in the control program. The second raw data graph shows the total number of sharks caught throughout the 13 areas where the control program is implemented in Queensland, Australia. A third graph was created to show the average number of sharks caught compared to the average number of mammal and turtle by-catch. 
 
-The data was downloaded as a Comma Separated Values (CSV) file directly from QFISH with a customized data selection to include year, species group and the fate of the animals caught. The CSV file was then imported into RStudio for analysis and to create the graphs.
+Two datasets were downloaded as Comma Separated Values (CSV) files directly from QFISH with a customized data selection to include year, species group and the numbers of animals, called the shark_program dataset (df1). Another CSV file includes the year, species group and the fate of the animals caught, called the shark_program_fatality dataset (df2). These two CSV files were then imported into RStudio for analysis and to create the graphs. 
 
-```{r importing_data, warning= FALSE, error= FALSE, echo= FALSE}
-df <- read_csv("export.csv")
-```
 
 ### Part 2. Tidy the Data
 
-The imported dataset required substantial data wrangling to get it into a "tidy" dataframe that could be more easily graphed. First, the 
+The imported datasets required substantial data wrangling to get them into a "tidy" dataframe that could be more easily graphed. Both needed one of the rows to be changed into the name of the column, while keeping the rows above them. 
+
+```{r importing_data, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
+library(tidyverse)
+library(janitor)
+shark_program <-
+  read_csv("export.csv") |>
+  row_to_names(row_number = 2, remove_rows_above = FALSE) |> #variable names are meaningless, so change by instructing 'row_to_names' function to put row number 2 as the column name
+  clean_names() 
+#head(shark_program) #inspect the first rows of the dataset
+
+shark_program_fatality <-
+  read_csv("export2.csv") |>
+  row_to_names(row_number = 3, remove_rows_above = FALSE) |> #variable names are meaningless, so change by instructing 'row_to_names' function to put row number 3 as the column name
+  clean_names() 
+#head(shark_program_fatality) #inspect first rows of dataset
+```
+
+The shark_program dataset then needs to be subset by the species group by using the OR operator ```|``` to select the area information or the columns that contain the species group name. The first row (years) then needs to be called to the column name. The shark_program_fatality dataset needs to be subset by using ```|``` to select the area or the column with "dead" in them. The second row (species group names) then needs to be called to the column name. This needs to be further subset by selecting for "sharks" in the column and then the first row (years) needs to change to the column name.
+
+```{r subsetting, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(janitor)
+
+########## shark_program dataset wrangling #########
+shark_catch <-
+  shark_program |>
+  select(area | contains("shark")) |>
+  row_to_names(row_number= 1) |>
+  rename(Area = 1) |>
+  mutate(across(-c(Area), as.numeric))
+
+mammal_catch <-
+  shark_program |>
+  select(area | contains("mammal")) |>
+  row_to_names(row_number= 1) |>
+  rename(Area = 1) |>
+  mutate(across(-c(Area), as.numeric))
+
+turtle_catch <-
+  shark_program |>
+  select(area | contains("turtle")) |>
+  row_to_names(row_number= 1) |>
+  rename(Area = 1) |>
+  mutate(across(-c(Area), as.numeric))
+
+
+######### shark_program_fatality dataset wrangling ########
+dead_data <-
+  shark_program_fatality |>
+  select(area | contains("dead")) |>
+  row_to_names(row_number= 2, remove_rows_above = FALSE) |>
+  clean_names() |>
+  rename(Area = 1)
+
+shark_dead <- 
+  dead_data |>
+  select(Area | contains("shark")) |>
+  row_to_names(row_number= 1) |>
+  rename(Area = 1) |>
+  mutate(across(-c(Area), as.numeric))
+```
+
+
+
+```{r pivot_long, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
+######### Pivoting wide tibbles into long format #######
+long_shark_catch <- shark_catch |> 
+  pivot_longer(!Area, names_to= "Year", values_to = "Nos")
+
+long_mammal_catch <- mammal_catch |>
+  pivot_longer(!Area, names_to= "Year", values_to = "Nos")
+
+long_turtle_catch <- turtle_catch |>
+  pivot_longer(!Area, names_to= "Year", values_to= "Nos")
+
+
+long_shark_dead <- shark_dead |> 
+  pivot_longer(!Area, names_to= "Year", values_to = "dead_sharks")
+
+######## Creating the dead shark by year dataset #########
+dead_shark_by_year <- long_shark_dead |>
+  filter(Area == "Grand Total") |>
+  mutate(Year = as.numeric(Year))
+
+long_shark_catch_dead <- left_join(long_shark_catch, long_shark_dead) |> #combining the shark catch and dead data
+  mutate(Year = as.numeric(Year))
+```
+
+
+
+
+```{r stats, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
+shark_stats <-
+  long_shark_catch |> #uses the long tibble
+  filter(Area != "Grand Total") |> #filters out areas not including grandtotal
+  group_by(Year) |> #groups area and numbers by year
+  summarise(Mean =mean(Nos, na.rm= TRUE),
+            SD = sd(Nos, na.rm= TRUE)) |> #calculates the statistics based on the year groupings
+  mutate(Year = as.numeric(Year)) |> #makes the Year a numeric value
+  mutate(Taxa= "Sharks") #creates new column with taxa as sharks
+
+turtle_stats <-
+  long_turtle_catch |>
+  filter(Area != "Grand Total") |>
+  group_by(Year) |>
+  summarise(Mean = mean(Nos, na.rm= TRUE), 
+            SD = sd(Nos, na.rm = TRUE)) |>
+  mutate(Year = as.numeric(Year)) |>
+  mutate(Taxa= "Turtles")
+
+mammal_stats <-
+  long_mammal_catch |>
+  filter(Area != "Grand Total") |>
+  group_by(Year) |>
+  summarise(Mean = mean(Nos, na.rm= TRUE),
+            SD= sd(Nos, na.rm= TRUE)) |>
+  mutate(Year= as.numeric(Year)) |>
+  mutate(Taxa= "Mammals")
+
+combine_stats <-
+  bind_rows(shark_stats, turtle_stats, mammal_stats) #combines all the species groups stats into one dataset
+
+```
+
+### Part 3. Shark Control Program Plots
+
+
+
+```{r, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
+########### shark catch and shark deaths plot ##########
+long_shark_catch_dead %>%
+  filter(Area != "Grand Total") %>%
+ggplot() +
+  geom_col(aes(x= Year, y=Nos), fill= "#00BA38") +
+  geom_col(aes(x= Year, y= dead_sharks), fill= "#F8766D")
+```
+**Figure 3.** 
+
+
+
+![Figure 4. Sharks Caught Within Each Area](images/sharks_by_area.png)
+
+
+**Figure 4.**
+
+
+```{r, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
+########## average shark, mammal, turtle catches ########
+ggplot(data= combine_stats, aes(x = Year, y= Mean, color= Taxa, shape= Taxa)) +
+  geom_point() +
+  geom_smooth() +
+  theme_bw() +
+  labs(title= "Average Number of Species Groups Caught")
+```
+**Figure 5.** 
