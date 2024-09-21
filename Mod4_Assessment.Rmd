@@ -12,9 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 The first task in this module is to find a graph that describes a topic of interest and could be improved upon. The column graph below describes the shark bite incidents in New South Wales, Australia through the years of 1870 to 2020. It also presents the counts of injuries and fatalities that resulted because of the shark incidents. This plot is used to illustrate the trends in shark bites in New South Wales before and after the Shark Meshing or Bather Protection Program was introduced in late 1937.
 
-![Original NSW Shark Incident Graph](images/Original_graph.png)
+![](images/Original_graph.png)
+**Figure 1. Original NSW shark incident graph with human injuries and fatalities**
 
-**Figure 1.** The original NSW shark incident graph is difficult to interpret because the trends are illustrated through bars, rather than with lines, plus the stacked bars end up emphasizing the fatalities before 1970 because the red color (fatalities) draws more attention and covers much of the blue column (injuries). This is misleading in that it appears there were many more fatalities prior to the 1970's. After analyzing the raw data, I also found that this graph completely leaves out the number of shark encounters that resulted in uninjured people. In these ways, this graph seems to be highlighting certain data points to strengthen the argument that the implementation of the Shark Meshing Program in 1937 has decreased the number of shark bites and fatalities in New South Wales. 
+The original NSW shark incident graph is difficult to interpret because the trends are illustrated through bars, rather than with lines, plus the stacked bars end up emphasizing the fatalities before 1970 because the red color (fatalities) draws more attention and covers much of the blue column (injuries). This is misleading in that it appears there were many more fatalities prior to the 1970's. After analyzing the raw data, I also found that this graph completely leaves out the number of shark encounters that resulted in uninjured people. In these ways, Figure 1 seems to be highlighting certain data points to strengthen the argument that the implementation of the Shark Meshing Program in 1937 has decreased the number of shark bites and fatalities in New South Wales. 
 
 &nbsp;  
 &nbsp;  
@@ -34,10 +35,11 @@ The first task in this module is to find a graph that describes a topic of inter
 &nbsp;  
 &nbsp;  
 
-![Reconstructed NSW Shark Incident Plot](images/reconstructed_NSWsharks.png)
+![](images/reconstructed_NSWsharks.png)
 
+**Figure 2. Reconstructed NSW shark incident plot with human injuries, fatalities and uninjured encounters**
 
-**Figure 2.** The reconstructed NSW shark incident plot shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. This graph shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
+The reconstructed NSW shark incident plot shows the trends of shark encounters in New South Wales more clearly as colored lines are used to represent the fatal (red), injured (green) and uninjured (green) incidents. The x-axis shows the Year and the y-axis is the number of incidents. The uninjured encounters are also added to the new graph because it is important to include all the injury information to avoid the implication that every shark encounter results in injury or death. Figure 2 shows a fuller picture of the data, and also makes it easier to see the peaks and trends of each individual shark encounter as the representative lines do not cover one another. Each incident category is properly represented and clearly shown.
 
 
 
@@ -51,7 +53,7 @@ Two datasets were downloaded as Comma Separated Values (CSV) files directly from
 
 ### Part 2. Tidy the Data
 
-The imported datasets required substantial data wrangling to get them into a "tidy" dataframe that could be more easily graphed. Both needed one of the rows to be changed into the name of the column, while keeping the rows above them. 
+The imported datasets require substantial data wrangling to get them into a "tidy" dataframe that can be more easily graphed. Both need one of the rows to be changed into the name of the column, while keeping the rows above them. 
 
 ```{r importing_data, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
 library(tidyverse)
@@ -69,7 +71,7 @@ shark_program_fatality <-
 #head(shark_program_fatality) #inspect first rows of dataset
 ```
 
-The shark_program dataset then needs to be subset by the species group by using the OR operator ```|``` to select the area information or the columns that contain the species group name. The first row (years) then needs to be called to the column name. The shark_program_fatality dataset needs to be subset by using ```|``` to select the area or the column with "dead" in them. The second row (species group names) then needs to be called to the column name. This needs to be further subset by selecting for "sharks" in the column and then the first row (years) needs to change to the column name.
+The shark_program dataset then needs to be subset by the species group by using the OR operator ```|``` to select the area information or the columns that contain the species group name. The first row (years) then needs to be called to the column name. The shark_program_fatality dataset needs to be subset by using ```|``` to select the area or the column with "dead" in them. The second row (species group names) then needs to be called to the column name. This dataset needs to be further subset by selecting for "sharks" in the column and then the first row (years) needs to be changed to the column name.
 
 ```{r subsetting, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
 library(tidyverse)
@@ -79,10 +81,10 @@ library(janitor)
 ########## shark_program dataset wrangling #########
 shark_catch <-
   shark_program |>
-  select(area | contains("shark")) |>
-  row_to_names(row_number= 1) |>
-  rename(Area = 1) |>
-  mutate(across(-c(Area), as.numeric))
+  select(area | contains("shark")) |> #selects area and columns with "shark"
+  row_to_names(row_number= 1) |> #changes the first row to the column name 
+  rename(Area = 1) |> #changes the first column to "Area"
+  mutate(across(-c(Area), as.numeric)) #changes all columns beside "Area" to numeric features
 
 mammal_catch <-
   shark_program |>
@@ -102,25 +104,26 @@ turtle_catch <-
 ######### shark_program_fatality dataset wrangling ########
 dead_data <-
   shark_program_fatality |>
-  select(area | contains("dead")) |>
-  row_to_names(row_number= 2, remove_rows_above = FALSE) |>
-  clean_names() |>
-  rename(Area = 1)
+  select(area | contains("dead")) |> #selects area columns and ones with "dead"
+  row_to_names(row_number= 2, remove_rows_above = FALSE) |> #changes second row to column name while keeping the first row
+  clean_names() |> 
+  rename(Area = 1) #changes first column to "Area"
 
+##### subsetting for dead shark data ########
 shark_dead <- 
   dead_data |>
-  select(Area | contains("shark")) |>
-  row_to_names(row_number= 1) |>
+  select(Area | contains("shark")) |> #selects Area and columns containing "sharks"
+  row_to_names(row_number= 1) |> 
   rename(Area = 1) |>
   mutate(across(-c(Area), as.numeric))
 ```
 
-
+The datasets with the numbers caught of each species group and the dead sharks dataset then need to be pivoted into long table format with the tidyverse ```pivot_long``` function so the information of both datasets can be plotted.
 
 ```{r pivot_long, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
 ######### Pivoting wide tibbles into long format #######
 long_shark_catch <- shark_catch |> 
-  pivot_longer(!Area, names_to= "Year", values_to = "Nos")
+  pivot_longer(!Area, names_to= "Year", values_to = "Nos") 
 
 long_mammal_catch <- mammal_catch |>
   pivot_longer(!Area, names_to= "Year", values_to = "Nos")
@@ -134,7 +137,7 @@ long_shark_dead <- shark_dead |>
 
 ######## Creating the dead shark by year dataset #########
 dead_shark_by_year <- long_shark_dead |>
-  filter(Area == "Grand Total") |>
+  filter(Area == "Grand Total") |> #selects "Grand Total" so total dead sharks by each year is subset
   mutate(Year = as.numeric(Year))
 
 long_shark_catch_dead <- left_join(long_shark_catch, long_shark_dead) |> #combining the shark catch and dead data
@@ -142,12 +145,12 @@ long_shark_catch_dead <- left_join(long_shark_catch, long_shark_dead) |> #combin
 ```
 
 
-
+Statistical computation is then done on the number of individuals caught for each species group. The mean and standard deviations are calculated for each and then combined to create a statistical dataset of sharks, mammals and turtles caught throughout the years.
 
 ```{r stats, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
 shark_stats <-
   long_shark_catch |> #uses the long tibble
-  filter(Area != "Grand Total") |> #filters out areas not including grandtotal
+  filter(Area != "Grand Total") |> #filters out areas not including "Grand Total"
   group_by(Year) |> #groups area and numbers by year
   summarise(Mean =mean(Nos, na.rm= TRUE),
             SD = sd(Nos, na.rm= TRUE)) |> #calculates the statistics based on the year groupings
@@ -174,29 +177,40 @@ mammal_stats <-
 
 combine_stats <-
   bind_rows(shark_stats, turtle_stats, mammal_stats) #combines all the species groups stats into one dataset
-
 ```
+
+Now that the data is wrangled and tidied, plots can be made to visually analyse various trends.
+
 
 ### Part 3. Shark Control Program Plots
 
-
+The first two plots are made with the raw data from the total catch of sharks to compare the number total catch with dead sharks, and the numbers of sharks caught by each area where the Shark Control Program is in effect.
+&nbsp;  
+&nbsp;  
 
 ```{r, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
 ########### shark catch and shark deaths plot ##########
 long_shark_catch_dead %>%
-  filter(Area != "Grand Total") %>%
+  filter(Area != "Grand Total") %>% #ignores "Grand Total" area
 ggplot() +
-  geom_col(aes(x= Year, y=Nos), fill= "#00BA38") +
-  geom_col(aes(x= Year, y= dead_sharks), fill= "#F8766D")
+  geom_col(aes(x= Year, y=Nos, fill= "#00BA38")) + #adds column of total number caught
+  geom_col(aes(x= Year, y= dead_sharks, fill= "#F8766D")) + #adds column of dead caught
+  labs(title= "Total Shark Catch Numbers of the Queensland Shark Control Program", y= "Number of Sharks Caught", legend= "Shark's Fate") + #cadds labels
+  scale_fill_discrete(name = "Shark's Fate", labels = c("Alive", "Dead")) #changes title and labels of legend
 ```
-**Figure 3.** 
+**Figure 3. Total shark catch numbers comparing alive and dead sharks.** This graph shows the proportion of caught sharks that are found alive vs dead after capture. 
+
+The Queensland Shark Control Program's overall intention is to capture sharks present at beach sites in an attempt to decrease the chances of a shark bite to a human. It includes a list of target sharks that are caught and euthanized, but those not on that list are meant to be released alive. Figure 3 shows that the majority of sharks caught end up dying. Further analyses into which species of sharks die would show how many un-targeted sharks are killed because of the control program's drumlines and nets.
+
+&nbsp;  
+&nbsp;  
 
 
+![](images/sharks_by_area.png)
 
-![Figure 4. Sharks Caught Within Each Area](images/sharks_by_area.png)
+**Figure 4. Total catches of sharks throughout the Queensland Shark Program areas.** This plot highlights which areas have the most catches of sharks throughout the 24 years.
 
-
-**Figure 4.**
+The Shark Control Program is in effect at the areas described in Figure 4, which helps to show which locations have the highest count of sharks caught. As can be seen, several areas, like Bribie Island, Sunshine Coast South and North Stradbroke Island have relatively low numbers of sharks caught by the control program. This graph emphasizes the need to compare areas to see differences in necessity of such programs. The low count areas could be further analysed to see how much by-catch is inadvertently caught and killed, which could determine the appropriateness of the control program for those locations.
 
 
 ```{r, warning= FALSE, error= FALSE, echo= FALSE, message=FALSE}
@@ -205,6 +219,10 @@ ggplot(data= combine_stats, aes(x = Year, y= Mean, color= Taxa, shape= Taxa)) +
   geom_point() +
   geom_smooth() +
   theme_bw() +
-  labs(title= "Average Number of Species Groups Caught")
+  labs(title= "Average Number of Species Groups Caught") 
 ```
-**Figure 5.** 
+**Figure 5. Average number of each species group caught through the Queensland Shark Control Program.** This plot shows the mean number of mammals (red), sharks (green) and turtles (blue) that have been caught throughout the years. The lines are added to show the trends of the data over time. The confidence interval, or variation in the data, is shown in grey around each line. 
+
+Counts of mammals and turtles that are captured in the drumlines and nets are included in the Queensland Shark Control Program data. This information is helpful in determining the number of un-targeted species that are affected by the program. Figure 5 shows that these numbers are low for mammals and turtles. Ideally, these animals would not be caught at all, especially since some species are endangered in the areas. These low numbers do help to show that, for the most part, the Shark Control Program is not adversely affecting mammals and turtles to a large degree. Further analyses to determine how many of these catches result in the death of the species could reveal locations where the program needs to be re-evaluated. 
+
+These graphs are good for initial exploration of the Shark Control data trends. As discussed, each graph and corresponding dataset can be further analysed to understand which shark species are caught most frequently and how many non-target species are killed as by-catch because of the Shark Control Program implementation. These kinds of in-depth analyses can help guide the effectiveness and appropriateness of the program throughout the different areas of Queensland. Including data about human usage of the program areas and the human-shark encounters within these areas would also help to determine if the program is actually required, or if alternative protection methods that decrease the fatality rate of by-catch or other at risk marine animals should be explored.
